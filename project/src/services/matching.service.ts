@@ -24,6 +24,22 @@ class MatchingService {
     heart: ['HLA-A', 'HLA-B', 'HLA-DR'],
   };
 
+  private readonly ORGAN_CONTRAINDICATIONS: Record<OrganType, string[]> = {
+    heart: [
+      'myocardial infarction', 'heart attack', 'cardiomyopathy', 
+      'coronary artery disease', 'chest trauma', 'heart trauma'
+    ],
+    liver: [
+      'cirrhosis', 'hepatitis b', 'hepatitis c', 'alcoholic liver disease', 
+      'liver failure', 'hepatotoxic', 'paracetamol overdose'
+    ],
+    kidney: [
+      'chronic kidney disease', 'kidney failure', 'polycystic kidney disease', 'pkd',
+      'diabetic nephropathy', 'uncontrolled hypertension', 'nephrotoxic', 
+      'ethylene glycol', 'lithium'
+    ],
+  };
+
   async findMatches(donor: Donor, recipients: Recipient[]): Promise<MatchResult[]> {
     if (!donor.organs_available || donor.organs_available.length === 0) {
       return [];
@@ -31,6 +47,15 @@ class MatchingService {
     
     const organ = donor.organs_available[0];
     const matches: MatchResult[] = [];
+
+    // Check for contraindications based on cause of death
+    const contraindications = this.ORGAN_CONTRAINDICATIONS[organ];
+    const causeOfDeath = donor.cause_of_death.toLowerCase();
+    for (const keyword of contraindications) {
+      if (causeOfDeath.includes(keyword)) {
+        throw new Error(`Organ (${organ}) is not viable for transplant due to donor's cause of death: "${donor.cause_of_death}".`);
+      }
+    }
 
     const compatibleRecipients = recipients.filter(r => 
       r.organ_needed === organ && 
