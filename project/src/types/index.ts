@@ -13,6 +13,8 @@ export type OrganType = 'kidney' | 'liver' | 'heart';
 
 export type UNOSStatus = '1A' | '1B' | '2' | '3' | '4' | '7';
 
+export type Gender = 'male' | 'female';
+
 export interface HlaTyping {
   'HLA-A': string[];
   'HLA-B': string[];
@@ -27,6 +29,7 @@ export interface BasePerson {
   id: string;
   name: string;
   age: number;
+  gender: Gender;
   blood_type: BloodType;
   hla_typing: HlaTyping;
   location: string;
@@ -64,6 +67,7 @@ export interface MatchResult {
     hla_compatibility: number; // Score from 0 to 1
     age_compatibility: boolean;
     size_compatibility: boolean;
+    gender_compatibility: boolean;
     urgency_bonus: number;
     time_on_list_bonus: number;
   };

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Plus, Minus } from 'lucide-react';
-import { Recipient, BloodType, OrganType, UNOSStatus } from '../../types';
+import { Recipient, BloodType, OrganType, UNOSStatus, Gender } from '../../types';
 
 interface RecipientFormProps {
   recipient?: Recipient;
@@ -17,6 +17,7 @@ export function RecipientForm({ recipient, onSubmit, onCancel, loading }: Recipi
   const [formData, setFormData] = useState({
     name: recipient?.name || '',
     age: recipient?.age?.toString() || '',
+    gender: recipient?.gender || 'male' as Gender,
     blood_type: recipient?.blood_type || 'O+' as BloodType,
     organ_needed: recipient?.organ_needed || 'kidney' as OrganType,
     hla_typing: recipient?.hla_typing || {
@@ -109,7 +110,7 @@ export function RecipientForm({ recipient, onSubmit, onCancel, loading }: Recipi
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Basic Information */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Full Name *
@@ -140,6 +141,38 @@ export function RecipientForm({ recipient, onSubmit, onCancel, loading }: Recipi
               />
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Gender *
+              </label>
+              <div className="flex items-center space-x-4 pt-2">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="gender"
+                    value="male"
+                    checked={formData.gender === 'male'}
+                    onChange={(e) => setFormData({ ...formData, gender: e.target.value as Gender })}
+                    className="text-blue-500 focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Male</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="gender"
+                    value="female"
+                    checked={formData.gender === 'female'}
+                    onChange={(e) => setFormData({ ...formData, gender: e.target.value as Gender })}
+                    className="text-blue-500 focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Female</span>
+                </label>
+              </div>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Blood Type *
