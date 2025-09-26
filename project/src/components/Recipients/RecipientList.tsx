@@ -122,13 +122,6 @@ export function RecipientList() {
     return 'Routine';
   };
 
-  const getTimeOnList = (timeOnList: string) => {
-    const days = Math.floor((Date.now() - new Date(timeOnList).getTime()) / (1000 * 60 * 60 * 24));
-    if (days < 30) return `${days} days`;
-    if (days < 365) return `${Math.floor(days / 30)} months`;
-    return `${Math.floor(days / 365)} years`;
-  };
-
   if (loading) {
     return (
       <div className="p-8">
@@ -260,9 +253,6 @@ export function RecipientList() {
                     Urgency
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Time on List
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -300,12 +290,6 @@ export function RecipientList() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center space-x-1 text-gray-600">
-                        <Clock className="h-4 w-4" />
-                        <span className="text-sm">{getTimeOnList(recipient.time_on_list)}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${getStatusColor(recipient.status)}`}>
                         {recipient.status}
                       </span>
@@ -337,7 +321,7 @@ export function RecipientList() {
       {/* Form Modal */}
       {showForm && (
         <RecipientForm
-          recipient={editingRecipient}
+          recipient={editingRecipient ?? undefined}
           onSubmit={handleSubmit}
           onCancel={() => {
             setShowForm(false);

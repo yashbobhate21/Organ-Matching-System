@@ -43,16 +43,16 @@ class MatchingService {
 
   private readonly MEDICAL_EXCLUSIONS = {
     donor: {
-      general: ['active infection', 'active malignancy', 'uncontrolled psychiatric illness', 'active alcohol abuse', 'active drug abuse'],
+      general: ['infection', 'malignancy', 'psychiatric illness', 'alcohol abuse', 'drug abuse'],
       kidney: [
-        'chronic kidney disease', 'low gfr', 'polycystic kidney disease', 'diabetes with organ damage', 
-        'uncontrolled hypertension', 'proteinuria', 'hematuria', 'recurrent kidney stones', 
-        'glomerulonephritis', 'severe renal infection', 'nephrotoxic', 'ethylene glycol', 'lithium'
+        'kidney disease', 'low gfr', 'polycystic kidney disease', 'diabetes with organ damage', 
+        'hypertension', 'proteinuria', 'hematuria', 'kidney stone', 
+        'glomerulonephritis', 'renal infection', 'nephrotoxic', 'ethylene glycol', 'lithium'
       ],
       heart: [
-        'coronary artery disease', 'prior myocardial infarction', 'myocardial infarction', 'heart attack', 
-        'severe valvular disease', 'cardiomyopathy', 'complex congenital heart disease', 
-        'persistent malignant arrhythmias', 'severe pulmonary hypertension', 'chest trauma', 'heart trauma', 'diabetes'
+        'coronary artery disease', 'myocardial infarction', 'myocardial infarction', 'heart attack', 
+        'valvular disease', 'cardiomyopathy', 'congenital heart disease', 
+        'malignant arrhythmias', 'pulmonary hypertension', 'chest trauma', 'heart trauma', 'diabetes'
       ],
       liver: [
         'cirrhosis', 'chronic hepatitis with fibrosis', 'fatty liver >30%', 'alcoholic liver disease', 
@@ -61,18 +61,18 @@ class MatchingService {
       ],
     },
     recipient: {
-      general: ['active infection', 'active malignancy', 'uncontrolled psychiatric illness', 'active alcohol abuse', 'active drug abuse', 'non-compliance with therapy'],
+      general: ['infection', 'malignancy', 'uncontrolled psychiatric illness', 'active alcohol abuse', 'drug abuse', 'non-compliance with therapy'],
       kidney: [
-        'active cancer', 'severe cardiovascular disease', 'severe peripheral vascular disease', 
-        'severe neurological impairment', 'non-compliance with dialysis', 'life expectancy <2 years'
+        'cancer', 'cardiovascular disease', 'peripheral vascular disease', 
+        'neurological impairment', 'non-compliance with dialysis', 'life expectancy <2 years'
       ],
       heart: [
-        'irreversible pulmonary hypertension', 'severe irreversible kidney disease', 
-        'severe irreversible liver disease', 'severe peripheral vascular disease', 'advanced neurological deficits'
+        'irreversible pulmonary hypertension', 'irreversible kidney disease', 
+        'irreversible liver disease', 'peripheral vascular disease', 'advanced neurological deficits'
       ],
       liver: [
-        'uncontrolled sepsis', 'extrahepatic malignancy', 'severe heart disease', 'severe lung disease', 
-        'uncontrolled hiv', 'persistent alcohol/drug abuse', 'severe irreversible brain injury'
+        'uncontrolled sepsis', 'extrahepatic malignancy', 'heart disease', 'lung disease', 
+        'hiv', 'persistent alcohol/drug abuse', 'irreversible brain injury'
       ],
     }
   };
@@ -94,25 +94,42 @@ class MatchingService {
 
     // 2. Filter recipients based on basic compatibility and eligibility
     const compatibleRecipients = recipients.filter(r => {
-      if (r.organ_needed !== organ || r.status !== 'active' || !this.isBloodCompatible(donor.blood_type, r.blood_type)) {
+      if (r.organ_needed !== organ) {
+        // This case should ideally not happen if recipients are pre-filtered
         return false;
       }
+      if (r.status !== 'active') {
+        console.log(`[Debug] Filtering out recipient ${r.id}: Inactive status.`);
+        return false;
+      }
+      if (!this.isBloodCompatible(donor.blood_type, r.blood_type)) {
+        console.log(`[Debug] Filtering out recipient ${r.id}: Incompatible blood type.`);
+        return false;
+      }
+      
       const recipientEligibility = this.isRecipientEligible(r, organ);
       if (!recipientEligibility.eligible) {
+        console.log(`[Debug] Filtering out recipient ${r.id}: Ineligible. Reason: ${recipientEligibility.reason}`);
         return false;
       }
-      // Check for age difference
+      
       const ageDiff = Math.abs(donor.age - r.age);
       if (ageDiff > this.AGE_RULES[organ].maxDiff) {
+        console.log(`[Debug] Filtering out recipient ${r.id}: Age difference (${ageDiff}) exceeds limit of ${this.AGE_RULES[organ].maxDiff}.`);
         return false;
       }
+      
       return true;
     });
 
     for (const recipient of compatibleRecipients) {
-      const matchResult = await this.calculateMatch(donor, recipient, organ);
-      if (matchResult.match_score > 30) { // Minimum viable match threshold
-        matches.push(matchResult);
+      try {
+        const matchResult = await this.calculateMatch(donor, recipient, organ);
+        if (matchResult.match_score > 30) { // Minimum viable match threshold
+          matches.push(matchResult);
+        }
+      } catch (error) {
+        console.error(`[Error] Failed to calculate match for donor ${donor.id} and recipient ${recipient.id}:`, error);
       }
     }
 
@@ -173,7 +190,6 @@ class MatchingService {
       size_compatibility: false,
       gender_compatibility: false,
       urgency_bonus: Math.min(recipient.urgency_score, 10),
-      time_on_list_bonus: 0,
     };
 
     // --- Common Factors (45 points total) ---
@@ -183,14 +199,10 @@ class MatchingService {
       matchScore += 30;
     }
 
-    // Urgency bonus (10 points)
-    matchScore += compatibility_factors.urgency_bonus;
-
-    // Time on list bonus (5 points)
-    const daysOnList = Math.floor((Date.now() - new Date(recipient.time_on_list).getTime()) / (1000 * 60 * 60 * 24));
-    const timeBonus = Math.min(daysOnList / 100, 5); // 1 point per 100 days, max 5
-    compatibility_factors.time_on_list_bonus = timeBonus;
-    matchScore += timeBonus;
+    // Urgency bonus (15 points)
+    const urgencyBonus = Math.min(recipient.urgency_score / 10 * 15, 15);
+    compatibility_factors.urgency_bonus = urgencyBonus;
+    matchScore += urgencyBonus;
 
     // --- Organ-Specific Factors (55 points total) ---
     let organSpecificScore = 0;
@@ -211,6 +223,13 @@ class MatchingService {
     const { risk_level, risk_percentage } = this.calculateRisk(donor, recipient, organ, matchScore);
     const urgency_level = this.determineUrgencyLevel(recipient, organ);
     const viability_window_hours = donor.cold_ischemia_time_hours ?? this.ORGAN_VIABILITY_HOURS[organ];
+
+    console.log(`[Debug] Match score for recipient ${recipient.id}: ${matchScore.toFixed(2)}`, {
+      common: (30 * (compatibility_factors.blood_compatibility ? 1:0)) + compatibility_factors.urgency_bonus,
+      organSpecific: organSpecificScore,
+      total: matchScore,
+      factors: compatibility_factors
+    });
 
     return {
       recipient,

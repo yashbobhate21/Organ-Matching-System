@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Plus, Minus } from 'lucide-react';
 import { Donor, BloodType, OrganType, Gender } from '../../types';
+import { supabase } from '../../lib/supabase';
 
 interface DonorFormProps {
   donor?: Donor;
@@ -47,17 +48,34 @@ export function DonorForm({ donor, onSubmit, onCancel, loading }: DonorFormProps
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const submitData = {
-      ...formData,
+    const dataToSubmit = {
+      name: formData.name,
       age: Number(formData.age),
+      gender: formData.gender,
+      blood_type: formData.blood_type,
+      organs_available: formData.organs_available ? [formData.organs_available] : [],
+      hla_typing: formData.hla_typing,
+      medical_history: formData.medical_history,
       height_cm: formData.height_cm ? Number(formData.height_cm) : null,
       weight_kg: formData.weight_kg ? Number(formData.weight_kg) : null,
+      cause_of_death: formData.cause_of_death,
       cold_ischemia_time_hours: formData.cold_ischemia_time_hours ? Number(formData.cold_ischemia_time_hours) : null,
+      location: formData.location,
       status: 'available' as const,
-      organs_available: formData.organs_available ? [formData.organs_available] : [],
     };
 
-    await onSubmit(submitData);
+    // The onSubmit prop is now responsible for handling the state after submission (e.g., closing the form).
+    // The actual API call is handled here to ensure the Supabase client is used correctly.
+    try {
+      const { error } = await supabase.from('donors').insert([dataToSubmit]);
+      if (error) {
+        throw error;
+      }
+      await onSubmit(dataToSubmit); // Notify parent component of success
+    } catch (error) {
+      console.error('Error saving donor:', error);
+      // Optionally, display an error message to the user
+    }
   };
 
   const handleOrganChange = (organ: OrganType) => {

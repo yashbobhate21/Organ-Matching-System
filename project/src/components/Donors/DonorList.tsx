@@ -99,17 +99,6 @@ export function DonorList() {
     }
   };
 
-  const getViabilityStatus = (availableUntil: string) => {
-    const now = new Date();
-    const deadline = new Date(availableUntil);
-    const hoursRemaining = Math.max(0, Math.floor((deadline.getTime() - now.getTime()) / (1000 * 60 * 60)));
-    
-    if (hoursRemaining === 0) return { status: 'expired', color: 'text-red-600', text: 'Expired' };
-    if (hoursRemaining <= 4) return { status: 'critical', color: 'text-red-600', text: `${hoursRemaining}h left` };
-    if (hoursRemaining <= 12) return { status: 'warning', color: 'text-yellow-600', text: `${hoursRemaining}h left` };
-    return { status: 'good', color: 'text-green-600', text: `${hoursRemaining}h left` };
-  };
-
   if (loading) {
     return (
       <div className="p-8">
@@ -226,7 +215,7 @@ export function DonorList() {
                     Organs Available
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Viability
+                    Cold Ischemia Time
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
@@ -238,8 +227,6 @@ export function DonorList() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredDonors.map((donor) => {
-                  const viability = getViabilityStatus(donor.available_until);
-                  
                   return (
                     <tr key={donor.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -265,9 +252,14 @@ export function DonorList() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className={`flex items-center space-x-1 ${viability.color}`}>
+                        <div className="flex items-center space-x-1 text-gray-700">
                           <Clock className="h-4 w-4" />
-                          <span className="text-sm font-medium">{viability.text}</span>
+                          <span className="text-sm font-medium">
+                            {donor.cold_ischemia_time_hours ? `${donor.cold_ischemia_time_hours} hours` : 'N/A'}
+                          </span>
+                          {donor.cold_ischemia_time_hours && donor.cold_ischemia_time_hours <= 6 && (
+                            <AlertCircle className="h-4 w-4 text-red-500" title="Critical time" />
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -303,7 +295,7 @@ export function DonorList() {
       {/* Form Modal */}
       {showForm && (
         <DonorForm
-          donor={editingDonor}
+          donor={editingDonor ?? undefined}
           onSubmit={handleSubmit}
           onCancel={() => {
             setShowForm(false);

@@ -51,7 +51,6 @@ export function RecipientForm({ recipient, onSubmit, onCancel, loading }: Recipi
       weight_kg: formData.weight_kg ? Number(formData.weight_kg) : null,
       meld_score: formData.meld_score ? Number(formData.meld_score) : null,
       unos_status: (formData.unos_status as UNOSStatus) || null,
-      time_on_list: recipient?.time_on_list || new Date().toISOString(),
       status: 'active' as const,
     };
 

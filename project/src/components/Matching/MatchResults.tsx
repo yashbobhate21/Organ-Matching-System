@@ -129,11 +129,11 @@ export function MatchResults({ matches, selectedDonor, loading, onCreateAllocati
                       </div>
                       
                       <div>
-                        <p className="text-xs text-gray-500 mb-1">Viability</p>
+                        <p className="text-xs text-gray-500 mb-1">Cold Ischemia Time</p>
                         <div className="flex items-center space-x-1">
                           <Clock className="h-3 w-3 text-gray-400" />
                           <span className="text-sm font-medium text-gray-700">
-                            {match.viability_window}h
+                            {match.cold_ischemia_time}
                           </span>
                         </div>
                       </div>

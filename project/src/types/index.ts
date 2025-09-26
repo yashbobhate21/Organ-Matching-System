@@ -50,7 +50,6 @@ export interface Donor extends BasePerson {
 export interface Recipient extends BasePerson {
   organ_needed: OrganType;
   urgency_score: number;
-  time_on_list: string;
   meld_score: number | null;
   unos_status: UNOSStatus | null;
   status: 'active' | 'transplanted' | 'inactive';
@@ -69,7 +68,6 @@ export interface MatchResult {
     size_compatibility: boolean;
     gender_compatibility: boolean;
     urgency_bonus: number;
-    time_on_list_bonus: number;
   };
   viability_window_hours: number;
 }

@@ -20,17 +20,6 @@ export function DonorSelector({ donors, selectedDonor, onDonorSelect, loading }:
     return matchesSearch && matchesBloodType;
   });
 
-  const getViabilityStatus = (availableUntil: string) => {
-    const now = new Date();
-    const deadline = new Date(availableUntil);
-    const hoursRemaining = Math.max(0, Math.floor((deadline.getTime() - now.getTime()) / (1000 * 60 * 60)));
-    
-    if (hoursRemaining === 0) return { status: 'expired', color: 'text-red-600', text: 'Expired' };
-    if (hoursRemaining <= 4) return { status: 'critical', color: 'text-red-600', text: `${hoursRemaining}h left` };
-    if (hoursRemaining <= 12) return { status: 'warning', color: 'text-yellow-600', text: `${hoursRemaining}h left` };
-    return { status: 'good', color: 'text-green-600', text: `${hoursRemaining}h left` };
-  };
-
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200">
       <div className="p-6 border-b border-gray-200">
@@ -77,7 +66,6 @@ export function DonorSelector({ donors, selectedDonor, onDonorSelect, loading }:
         ) : (
           <div className="divide-y divide-gray-200">
             {filteredDonors.map((donor) => {
-              const viability = getViabilityStatus(donor.available_until);
               const isSelected = selectedDonor?.id === donor.id;
               
               return (
@@ -110,9 +98,11 @@ export function DonorSelector({ donors, selectedDonor, onDonorSelect, loading }:
                         ))}
                       </div>
                       
-                      <div className={`flex items-center space-x-1 ${viability.color}`}>
+                      <div className={`flex items-center space-x-1 ${donor.cold_ischemia_time_hours && donor.cold_ischemia_time_hours <= 6 ? 'text-red-600' : 'text-gray-600'}`}>
                         <Clock className="h-3 w-3" />
-                        <span className="text-xs font-medium">{viability.text}</span>
+                        <span className="text-xs font-medium">
+                          {donor.cold_ischemia_time_hours ? `${donor.cold_ischemia_time_hours}h ischemia time` : 'Ischemia time not set'}
+                        </span>
                       </div>
                     </div>
                     
