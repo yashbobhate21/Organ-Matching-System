@@ -138,7 +138,7 @@ export function AllocationModal({ donor, match, onClose, onComplete }: Allocatio
                 <p className="text-sm text-gray-600 mt-1">Urgency</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold text-blue-600">{match.viability_window}h</p>
+                <p className="text-2xl font-bold text-blue-600">{match.viability_window}</p>
                 <p className="text-sm text-gray-600">Viability Window</p>
               </div>
             </div>
@@ -222,13 +222,7 @@ export function AllocationModal({ donor, match, onClose, onComplete }: Allocatio
                 <div>
                   <span className="text-gray-600">Urgency Bonus:</span>
                   <span className="ml-2 font-medium text-yellow-600">
-                    +{match.compatibility_factors.urgency_bonus}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-gray-600">Time Bonus:</span>
-                  <span className="ml-2 font-medium text-purple-600">
-                    +{match.compatibility_factors.time_on_list_bonus.toFixed(1)}
+                    +{match.compatibility_factors.urgency_bonus.toFixed(1)}
                   </span>
                 </div>
               </div>

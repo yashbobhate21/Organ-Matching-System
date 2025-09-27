@@ -1,4 +1,3 @@
-import React from 'react';
 import { Users, AlertTriangle, Clock, Activity, CheckCircle, XCircle, Heart } from 'lucide-react';
 import { Donor, MatchResult } from '../../types';
 
@@ -187,11 +186,10 @@ export function MatchResults({ matches, selectedDonor, loading, onCreateAllocati
 
                 {/* Additional Info */}
                 <div className="text-xs text-gray-500 bg-gray-50 rounded-lg p-3">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                     <span>Urgency Score: {match.recipient.urgency_score}/10</span>
                     <span>Risk: {match.risk_percentage?.toFixed(1)}%</span>
-                    <span>Time Bonus: +{match.compatibility_factors.time_on_list_bonus.toFixed(1)}</span>
-                    <span>Urgency Bonus: +{match.compatibility_factors.urgency_bonus}</span>
+                    <span>Urgency Bonus: +{match.compatibility_factors.urgency_bonus.toFixed(1)}</span>
                   </div>
                 </div>
               </div>

@@ -1,3 +1,5 @@
+import { ReactNode } from "react";
+
 export interface Admin {
   id: string;
   email: string;
@@ -56,6 +58,8 @@ export interface Recipient extends BasePerson {
 }
 
 export interface MatchResult {
+  viability_window: ReactNode;
+  cold_ischemia_time: ReactNode;
   recipient: Recipient;
   match_score: number;
   risk_level: 'low' | 'medium' | 'high';
