@@ -47,7 +47,7 @@ export function DonorForm({ donor, onSubmit, onCancel, loading }: DonorFormProps
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const dataToSubmit = {
       name: formData.name,
       age: Number(formData.age),
@@ -64,13 +64,24 @@ export function DonorForm({ donor, onSubmit, onCancel, loading }: DonorFormProps
       status: 'available' as const,
     };
 
-    // The onSubmit prop is now responsible for handling the state after submission (e.g., closing the form).
-    // The actual API call is handled here to ensure the Supabase client is used correctly.
     try {
-      const { error } = await supabase.from('donors').insert([dataToSubmit]);
-      if (error) {
-        throw error;
+      if (donor) {
+        // Update existing donor
+        const { error } = await supabase
+          .from('donors')
+          .update(dataToSubmit)
+          .eq('id', donor.id);
+        if (error) {
+          throw error;
+        }
+      } else {
+        // Create new donor
+        const { error } = await supabase.from('donors').insert([dataToSubmit]);
+        if (error) {
+          throw error;
+        }
       }
+
       await onSubmit(dataToSubmit); // Notify parent component of success
     } catch (error) {
       console.error('Error saving donor:', error);

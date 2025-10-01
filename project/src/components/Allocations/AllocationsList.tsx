@@ -437,7 +437,11 @@ export function AllocationsList() {
       {/* Details Modal */}
       {showDetailsModal && selectedAllocation && (
         <AllocationDetailsModal
-          allocation={selectedAllocation}
+          allocation={{
+            ...selectedAllocation,
+            donor: selectedAllocation.donor || { name: 'Unknown Donor', age: 0, blood_type: 'O+', location: 'Unknown' },
+            recipient: selectedAllocation.recipient || { name: 'Unknown Recipient', age: 0, blood_type: 'O+', organ_needed: 'kidney', urgency_score: 0 },
+          }}
           onClose={() => {
             setShowDetailsModal(false);
             setSelectedAllocation(null);

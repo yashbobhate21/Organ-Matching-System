@@ -50,6 +50,7 @@ export interface Donor extends BasePerson {
 }
 
 export interface Recipient extends BasePerson {
+  time_on_list: string | number | Date;
   organ_needed: OrganType;
   urgency_score: number;
   meld_score: number | null;
@@ -82,9 +83,27 @@ export interface OrganViability {
   liver: { min: 8, max: 12 };
 }
 
-export interface CompatibilityRules {
-  blood_type_compatibility: Record<BloodType, BloodType[]>;
-  organ_viability: OrganViability;
-  hla_importance: Record<OrganType, string[]>;
-  size_tolerance: Record<OrganType, number>;
+export interface CompatibilityFactors {
+  age_compatibility: any;
+  blood_compatibility: boolean;
+  hla_compatibility: number; // Assuming it's a percentage (e.g., 0.85 for 85%)
+  size_compatibility: boolean;
+  urgency_bonus: number;
+}
+
+export interface Allocation {
+  id: string;
+  donor_id: string;
+  recipient_id: string;
+  organ_type: OrganType;
+  match_score: number;
+  risk_level: 'low' | 'medium' | 'high';
+  risk_percentage: number;
+  urgency_level: 'routine' | 'urgent' | 'critical';
+  compatibility_factors: CompatibilityFactors; // Use the object type here
+  allocated_at: string;
+  transplant_scheduled: string | null;
+  status: 'pending' | 'completed' | 'cancelled' | 'confirmed';
+  notes: string | null;
+  allocated_by: string | null;
 }

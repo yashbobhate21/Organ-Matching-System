@@ -56,6 +56,7 @@ export type Database = {
           weight_kg: number | null;
           cause_of_death: string | null;
           cold_ischemia_time_hours: number | null;
+          ischemia_start_at: string | null; // NEW: anchor for CIT countdown
           status: 'available' | 'matched' | 'unavailable';
           location: string | null;
           created_at: string;
@@ -74,6 +75,7 @@ export type Database = {
           weight_kg?: number | null;
           cause_of_death?: string | null;
           cold_ischemia_time_hours?: number | null;
+          ischemia_start_at?: string | null; // NEW
           status?: 'available' | 'matched' | 'unavailable';
           location?: string | null;
           created_at?: string;
@@ -92,6 +94,7 @@ export type Database = {
           weight_kg?: number | null;
           cause_of_death?: string | null;
           cold_ischemia_time_hours?: number | null;
+          ischemia_start_at?: string | null; // NEW
           status?: 'available' | 'matched' | 'unavailable';
           location?: string | null;
           created_at?: string;

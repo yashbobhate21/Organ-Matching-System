@@ -214,6 +214,12 @@ export function AllocationDetailsModal({ allocation, onClose, onUpdate }: Alloca
                     <p className="font-medium text-gray-900">{allocation.donor.cause_of_death}</p>
                   </div>
                 )}
+                {allocation.donor.medical_history && (
+                  <div>
+                    <p className="text-sm text-gray-500">Medical History</p>
+                    <p className="font-medium text-gray-900">{allocation.donor.medical_history}</p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -243,27 +249,23 @@ export function AllocationDetailsModal({ allocation, onClose, onUpdate }: Alloca
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-500">Urgency Score</p>
-                    <p className="font-medium text-gray-900">{allocation.recipient.urgency_score}/10</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Time on List</p>
-                    <p className="font-medium text-gray-900">
-                      {Math.floor((Date.now() - new Date(allocation.recipient.time_on_list).getTime()) / (1000 * 60 * 60 * 24))} days
-                    </p>
-                  </div>
+                  {allocation.recipient.height_cm && (
+                    <div>
+                      <p className="text-sm text-gray-500">Height</p>
+                      <p className="font-medium text-gray-900">{allocation.recipient.height_cm} cm</p>
+                    </div>
+                  )}
+                  {allocation.recipient.weight_kg && (
+                    <div>
+                      <p className="text-sm text-gray-500">Weight</p>
+                      <p className="font-medium text-gray-900">{allocation.recipient.weight_kg} kg</p>
+                    </div>
+                  )}
                 </div>
-                {allocation.recipient.meld_score && (
+                {allocation.recipient.medical_history && (
                   <div>
-                    <p className="text-sm text-gray-500">MELD Score</p>
-                    <p className="font-medium text-gray-900">{allocation.recipient.meld_score}</p>
-                  </div>
-                )}
-                {allocation.recipient.las_score && (
-                  <div>
-                    <p className="text-sm text-gray-500">LAS Score</p>
-                    <p className="font-medium text-gray-900">{allocation.recipient.las_score}</p>
+                    <p className="text-sm text-gray-500">Medical History</p>
+                    <p className="font-medium text-gray-900">{allocation.recipient.medical_history}</p>
                   </div>
                 )}
               </div>
@@ -334,14 +336,6 @@ export function AllocationDetailsModal({ allocation, onClose, onUpdate }: Alloca
                 <p className="text-xs text-gray-600">Urgency Bonus</p>
               </div>
               
-              <div className="text-center">
-                <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center mx-auto mb-2">
-                  <span className="text-purple-600 font-bold text-xs">
-                    +{allocation.compatibility_factors.time_on_list_bonus.toFixed(1)}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-600">Time Bonus</p>
-              </div>
             </div>
           </div>
 

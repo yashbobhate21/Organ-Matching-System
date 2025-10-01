@@ -19,8 +19,16 @@ export function AllocationModal({ donor, match, onClose, onComplete }: Allocatio
     notes: '',
   });
 
+  const remainingViability = Number(match.viability_window ?? 0);
+  const isExpired = remainingViability <= 0;
+  const isNearExpiry = !isExpired && remainingViability <= 1;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isExpired) {
+      // Prevent allocation if organ is no longer viable
+      return;
+    }
     setLoading(true);
 
     try {
@@ -81,6 +89,18 @@ export function AllocationModal({ donor, match, onClose, onComplete }: Allocatio
         </div>
 
         <div className="p-6">
+          {/* Expiry banners */}
+          {isExpired && (
+            <div className="mb-4 bg-red-50 border border-red-200 text-red-700 rounded-lg p-3">
+              The organ is no longer viable (cold ischemia window has elapsed). Allocation is disabled.
+            </div>
+          )}
+          {!isExpired && isNearExpiry && (
+            <div className="mb-4 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-lg p-3">
+              The organ is near expiry. Remaining viability: {remainingViability.toFixed(1)}h
+            </div>
+          )}
+
           {/* Match Summary */}
           <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-6 mb-6">
             <div className="flex items-center space-x-3 mb-4">
@@ -138,8 +158,10 @@ export function AllocationModal({ donor, match, onClose, onComplete }: Allocatio
                 <p className="text-sm text-gray-600 mt-1">Urgency</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold text-blue-600">{match.viability_window}</p>
-                <p className="text-sm text-gray-600">Viability Window</p>
+                <p className={`text-2xl font-bold ${isExpired ? 'text-red-600' : 'text-blue-600'}`}>
+                  {isExpired ? 'Expired' : `${remainingViability.toFixed(1)}h`}
+                </p>
+                <p className="text-sm text-gray-600">Remaining Viability</p>
               </div>
             </div>
           </div>
@@ -196,25 +218,25 @@ export function AllocationModal({ donor, match, onClose, onComplete }: Allocatio
               <h4 className="font-medium text-gray-900 mb-3">Compatibility Details</h4>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                 <div>
-                  <span className="text-gray-600">Blood Compatible:</span>
+                  <span className="text-gray-600">Blood Compatibility:</span>
                   <span className={`ml-2 font-medium ${match.compatibility_factors.blood_compatibility ? 'text-green-600' : 'text-red-600'}`}>
                     {match.compatibility_factors.blood_compatibility ? 'Yes' : 'No'}
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-600">HLA Match:</span>
+                  <span className="text-gray-600">HLA Compatibility:</span>
                   <span className="ml-2 font-medium text-blue-600">
                     {(match.compatibility_factors.hla_compatibility * 100).toFixed(0)}%
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-600">Age Compatible:</span>
+                  <span className="text-gray-600">Age Compatibility:</span>
                   <span className={`ml-2 font-medium ${match.compatibility_factors.age_compatibility ? 'text-green-600' : 'text-red-600'}`}>
                     {match.compatibility_factors.age_compatibility ? 'Yes' : 'No'}
                   </span>
                 </div>
                 <div>
-                  <span className="text-gray-600">Size Compatible:</span>
+                  <span className="text-gray-600">Size Compatibility:</span>
                   <span className={`ml-2 font-medium ${match.compatibility_factors.size_compatibility ? 'text-green-600' : 'text-red-600'}`}>
                     {match.compatibility_factors.size_compatibility ? 'Yes' : 'No'}
                   </span>
@@ -239,8 +261,9 @@ export function AllocationModal({ donor, match, onClose, onComplete }: Allocatio
               </button>
               <button
                 type="submit"
-                disabled={loading}
-                className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading || isExpired}
+                className={`px-6 py-2 rounded-lg text-white ${isExpired ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600'} disabled:opacity-50 disabled:cursor-not-allowed`}
+                title={isExpired ? 'Organ is no longer viable' : undefined}
               >
                 {loading ? 'Creating Allocation...' : 'Confirm Allocation'}
               </button>
