@@ -263,8 +263,6 @@ export function AllocationsList() {
               <option value="kidney">Kidney</option>
               <option value="liver">Liver</option>
               <option value="heart">Heart</option>
-              <option value="lung">Lung</option>
-              <option value="pancreas">Pancreas</option>
             </select>
           </div>
 

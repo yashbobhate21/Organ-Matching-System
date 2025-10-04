@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, AlertTriangle, Calendar, FileText, User, Heart } from 'lucide-react';
 import { Donor, MatchResult, Allocation } from '../../types';
 import { apiService } from '../../services/api.service';
@@ -19,7 +19,34 @@ export function AllocationModal({ donor, match, onClose, onComplete }: Allocatio
     notes: '',
   });
 
-  const remainingViability = Number(match.viability_window ?? 0);
+  // Real-time remaining viability calculation
+  const VIABILITY_DEFAULTS: Record<string, number> = { kidney: 24, heart: 6, liver: 12 };
+  const getIschemiaStartAt = () => {
+    const anyDonor = donor as any;
+    return anyDonor.ischemia_start_at || anyDonor.updated_at || anyDonor.created_at;
+  };
+  const computeRemaining = () => {
+    const organ = match.recipient.organ_needed as keyof typeof VIABILITY_DEFAULTS;
+    const limit = donor.cold_ischemia_time_hours ?? VIABILITY_DEFAULTS[organ] ?? 24;
+    const startIso = getIschemiaStartAt();
+    if (!startIso) return limit;
+    const elapsedHrs = Math.max(0, (Date.now() - new Date(startIso).getTime()) / (1000 * 60 * 60));
+    return Math.max(0, Math.round((limit - elapsedHrs) * 10) / 10);
+  };
+
+  // Replace static viability read with live state
+  const [remainingViability, setRemainingViability] = useState<number>(() => computeRemaining());
+  useEffect(() => {
+    setRemainingViability(computeRemaining());
+    const id = setInterval(() => setRemainingViability(computeRemaining()), 30000); // update every 30s
+    return () => clearInterval(id);
+  }, [
+    donor.cold_ischemia_time_hours,
+    (donor as any).ischemia_start_at,
+    (donor as any).updated_at,
+    match.recipient.organ_needed,
+  ]);
+
   const isExpired = remainingViability <= 0;
   const isNearExpiry = !isExpired && remainingViability <= 1;
 

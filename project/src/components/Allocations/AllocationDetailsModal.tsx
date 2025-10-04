@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Calendar, User, Heart, Activity, AlertTriangle, Clock, FileText, Edit2, Save } from 'lucide-react';
 import { Allocation, Donor, Recipient } from '../../types';
 import { apiService } from '../../services/api.service';
@@ -24,6 +24,34 @@ export function AllocationDetailsModal({ allocation, onClose, onUpdate }: Alloca
     notes: allocation.notes || '',
     status: allocation.status,
   });
+
+  // Real-time remaining viability calculation
+  const VIABILITY_DEFAULTS: Record<string, number> = { kidney: 24, heart: 6, liver: 12 };
+  const getIschemiaStartAt = () => {
+    const anyDonor = allocation.donor as any;
+    return anyDonor.ischemia_start_at || anyDonor.updated_at || anyDonor.created_at;
+  };
+  const computeRemaining = () => {
+    const organ = allocation.organ_type as keyof typeof VIABILITY_DEFAULTS;
+    const limit = allocation.donor.cold_ischemia_time_hours ?? VIABILITY_DEFAULTS[organ] ?? 24;
+    const startIso = getIschemiaStartAt();
+    if (!startIso) return limit;
+    const elapsedHrs = Math.max(0, (Date.now() - new Date(startIso).getTime()) / (1000 * 60 * 60));
+    return Math.max(0, Math.round((limit - elapsedHrs) * 10) / 10);
+  };
+  const [remainingViability, setRemainingViability] = useState<number>(() => computeRemaining());
+  useEffect(() => {
+    setRemainingViability(computeRemaining());
+    const id = setInterval(() => setRemainingViability(computeRemaining()), 30000);
+    return () => clearInterval(id);
+  }, [
+    allocation.donor.cold_ischemia_time_hours,
+    (allocation.donor as any).ischemia_start_at,
+    (allocation.donor as any).updated_at,
+    allocation.organ_type,
+  ]);
+  const isExpired = remainingViability <= 0;
+  const isNearExpiry = !isExpired && remainingViability <= 1;
 
   const handleSave = async () => {
     setLoading(true);
@@ -128,6 +156,18 @@ export function AllocationDetailsModal({ allocation, onClose, onUpdate }: Alloca
         </div>
 
         <div className="p-6 space-y-8">
+          {/* Viability banners */}
+          {isExpired && (
+            <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3">
+              The organ is no longer viable (cold ischemia window has elapsed).
+            </div>
+          )}
+          {!isExpired && isNearExpiry && (
+            <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 rounded-lg p-3">
+              The organ is near expiry. Remaining viability: {remainingViability.toFixed(1)}h
+            </div>
+          )}
+
           {/* Allocation Overview */}
           <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -369,6 +409,12 @@ export function AllocationDetailsModal({ allocation, onClose, onUpdate }: Alloca
                       }
                     </p>
                   )}
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500 mb-2">Remaining Viability</p>
+                  <p className={`font-medium ${isExpired ? 'text-red-600' : 'text-blue-600'}`}>
+                    {isExpired ? 'Expired' : `${remainingViability.toFixed(1)} hours`}
+                  </p>
                 </div>
                 {allocation.risk_percentage && (
                   <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">

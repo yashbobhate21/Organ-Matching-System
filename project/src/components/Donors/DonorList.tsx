@@ -15,6 +15,13 @@ export function DonorList() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [bloodTypeFilter, setBloodTypeFilter] = useState('all');
 
+  // Real-time viability ticker to force re-render every 30s
+  const [viabilityTick, setViabilityTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setViabilityTick((t) => t + 1), 30000);
+    return () => clearInterval(id);
+  }, []);
+
   useEffect(() => {
     loadDonors();
   }, []);
@@ -97,6 +104,21 @@ export function DonorList() {
       case 'declined': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  // Helpers to compute remaining viability per donor
+  const VIABILITY_DEFAULTS: Record<string, number> = { kidney: 24, heart: 6, liver: 12 };
+  const getIschemiaStartAt = (donor: Donor) => {
+    const anyDonor = donor as any;
+    return anyDonor.ischemia_start_at || anyDonor.updated_at || anyDonor.created_at;
+  };
+  const computeRemaining = (donor: Donor) => {
+    const firstOrgan = donor.organs_available?.[0] as keyof typeof VIABILITY_DEFAULTS | undefined;
+    const limit = donor.cold_ischemia_time_hours ?? (firstOrgan ? VIABILITY_DEFAULTS[firstOrgan] : 24);
+    const startIso = getIschemiaStartAt(donor);
+    if (!startIso) return limit;
+    const elapsedHrs = Math.max(0, (Date.now() - new Date(startIso).getTime()) / (1000 * 60 * 60));
+    return Math.max(0, Math.round((limit - elapsedHrs) * 10) / 10);
   };
 
   if (loading) {
@@ -227,6 +249,13 @@ export function DonorList() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredDonors.map((donor) => {
+                  // Recompute on each render; viabilityTick triggers periodic refresh
+                  void viabilityTick;
+                  const citSet = donor.cold_ischemia_time_hours != null;
+                  const remaining = computeRemaining(donor);
+                  const isExpired = citSet && remaining <= 0;
+                  const isNearExpiry = citSet && remaining > 0 && remaining <= 1;
+
                   return (
                     <tr key={donor.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -254,11 +283,11 @@ export function DonorList() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-1 text-gray-700">
                           <Clock className="h-4 w-4" />
-                          <span className="text-sm font-medium">
-                            {donor.cold_ischemia_time_hours ? `${donor.cold_ischemia_time_hours} hours` : 'N/A'}
+                          <span className={`text-sm font-medium ${isExpired ? 'text-red-600' : isNearExpiry ? 'text-yellow-600' : ''}`}>
+                            {citSet ? (isExpired ? 'Expired' : `${remaining.toFixed(1)} hours`) : 'N/A'}
                           </span>
-                          {donor.cold_ischemia_time_hours && donor.cold_ischemia_time_hours <= 6 && (
-                            <AlertCircle className="h-4 w-4 text-red-500" title="Critical time" />
+                          {citSet && (isExpired || isNearExpiry) && (
+                            <AlertCircle className={`h-4 w-4 ${isExpired ? 'text-red-500' : 'text-yellow-500'}`} />
                           )}
                         </div>
                       </td>
