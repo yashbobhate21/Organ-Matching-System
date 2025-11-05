@@ -46,7 +46,7 @@ export interface Donor extends BasePerson {
   organs_available: OrganType[];
   cause_of_death: string;
   cold_ischemia_time_hours: number | null;
-  status: 'available' | 'matched' | 'unavailable';
+  status: 'available' | 'matched' | 'unavailable'|'allocated';
 }
 
 export interface Recipient extends BasePerson {

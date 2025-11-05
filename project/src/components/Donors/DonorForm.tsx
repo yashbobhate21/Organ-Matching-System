@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { X, Plus, Minus } from 'lucide-react';
 import { Donor, BloodType, OrganType, Gender } from '../../types';
-import { supabase } from '../../lib/supabase';
 
 interface DonorFormProps {
   donor?: Donor;
@@ -65,27 +64,10 @@ export function DonorForm({ donor, onSubmit, onCancel, loading }: DonorFormProps
     };
 
     try {
-      if (donor) {
-        // Update existing donor
-        const { error } = await supabase
-          .from('donors')
-          .update(dataToSubmit)
-          .eq('id', donor.id);
-        if (error) {
-          throw error;
-        }
-      } else {
-        // Create new donor
-        const { error } = await supabase.from('donors').insert([dataToSubmit]);
-        if (error) {
-          throw error;
-        }
-      }
-
-      await onSubmit(dataToSubmit); // Notify parent component of success
+      // Delegate persistence to parent to avoid duplicate list entries
+      await onSubmit(dataToSubmit);
     } catch (error) {
       console.error('Error saving donor:', error);
-      // Optionally, display an error message to the user
     }
   };
 

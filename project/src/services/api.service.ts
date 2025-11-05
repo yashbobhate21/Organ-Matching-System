@@ -182,7 +182,7 @@ class ApiService {
       .select('status')
       .then(({ data }) => {
         const counts = { available: 0, allocated: 0, expired: 0, declined: 0 };
-        data?.forEach(d => counts[d.status]++);
+        data?.forEach((d: { status: keyof typeof counts }) => counts[d.status]++);
         return counts;
       });
 
@@ -191,7 +191,7 @@ class ApiService {
       .select('status')
       .then(({ data }) => {
         const counts = { active: 0, transplanted: 0, removed: 0, deceased: 0 };
-        data?.forEach(r => counts[r.status]++);
+        data?.forEach((r: { status: keyof typeof counts }) => counts[r.status]++);
         return counts;
       });
 

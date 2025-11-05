@@ -54,17 +54,20 @@ class MatchingService {
       kidney: [
         'kidney disease', 'low gfr', 'polycystic kidney disease', 'diabetes with organ damage', 
         'hypertension', 'proteinuria', 'hematuria', 'kidney stone', 
-        'glomerulonephritis', 'renal infection', 'nephrotoxic', 'ethylene glycol', 'lithium', 'diabetes'
+        'glomerulonephritis', 'renal infection', 'nephrotoxic', 'ethylene glycol', 'lithium', 'diabetes','fatal gunshots',
+        'hypoxic injury','Sepsis','Diabetic nephropathy','renal failure','tuberculosis','cancer','HIV','HBV','HCV'
       ],
       heart: [
         'coronary artery disease', 'myocardial infarction', 'myocardial infarction', 'heart attack', 
-        'valvular disease', 'cardiomyopathy', 'congenital heart disease', 
-        'malignant arrhythmias', 'pulmonary hypertension', 'chest trauma', 'heart trauma', 'diabetes'
+        'valvular disease', 'cardiomyopathy', 'congenital heart disease', 'cardiac arrest',
+        'malignant arrhythmias', 'pulmonary hypertension', 'chest trauma', 'heart trauma', 'diabetes','fatal gunshots',
+        'circulatory accident','brain dead','histological pathalogy','tuberculosis','cancer','HIV','HBV','HCV'
       ],
       liver: [
         'cirrhosis', 'chronic hepatitis with fibrosis', 'fatty liver >30%', 'alcoholic liver disease', 
         'biliary disease', 'wilson’s disease', 'hemochromatosis', 'alpha-1 antitrypsin deficiency', 
-        'portal hypertension', 'liver failure', 'hepatotoxic', 'paracetamol overdose', 'hepatitis b', 'hepatitis c'
+        'portal hypertension', 'liver failure', 'hepatotoxic', 'paracetamol overdose', 'hepatitis b', 'hepatitis c','fatal gunshots',
+        'tuberculosis','cancer','HIV','renal trauma','HBV','HCV'
       ],
     },
     recipient: {
